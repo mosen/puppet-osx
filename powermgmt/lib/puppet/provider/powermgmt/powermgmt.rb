@@ -11,7 +11,7 @@ Puppet::Type.type(:powermgmt).provide :powermgmt, :parent => Puppet::Provider do
     attr_accessor :pm_profiles
   
     def prefetch(resources)
-      info("Fetching current power management profile")
+      # info("Fetching current power management profile")
       
       self.pm_profiles = {
         :profiles => {},
@@ -30,14 +30,18 @@ Puppet::Type.type(:powermgmt).provide :powermgmt, :parent => Puppet::Provider do
           when line.match(/Currently in use:/)
             pm_section = :current_profile
           else
-            line_kv = line.strip.split(%r{\t})
+            # TODO: split only on tabs in the Active Profiles
+            line_kv = (pm_section === :profiles) ? line.strip.split(/\t+/) : line.strip.split(/\s+/)
             self.pm_profiles[pm_section][line_kv[0]] = line_kv[1]
         end
       end
+      
+      info(pm_profiles.inspect)
     end 
   end
   
   # TODO: does not parse
+  # System sleep time
   def sleep
     return Integer(self.class.pm_profiles[:current_profile]["sleep"]) if self.class.pm_profiles[:current_profile]["sleep"].length > 0
     0
@@ -47,6 +51,7 @@ Puppet::Type.type(:powermgmt).provide :powermgmt, :parent => Puppet::Provider do
     pmset '-a', 'sleep', minutes
   end
   
+  # Disk spin down time
   def disk_sleep
     return self.class.pm_profiles[:current_profile]["disksleep"].to_i
   end
@@ -55,6 +60,7 @@ Puppet::Type.type(:powermgmt).provide :powermgmt, :parent => Puppet::Provider do
     pmset '-a', 'disksleep', minutes
   end
   
+  # Display sleep time
   def display_sleep
     return self.class.pm_profiles[:current_profile]["displaysleep"].to_i
   end
@@ -65,29 +71,41 @@ Puppet::Type.type(:powermgmt).provide :powermgmt, :parent => Puppet::Provider do
   
   # TODO: does not parse
   def wake_on_lan
-    info("womp:" + self.class.pm_profiles[:current_profile]["womp"])
-    return self.class.pm_profiles[:current_profile]["womp"] === '1'
+    if self.class.pm_profiles[:current_profile]["womp"] === '1'
+      :true
+    else
+      :false
+    end
   end
   
   def wake_on_lan=(enabled)
-    pmset '-a', 'womp', (enabled ? '1' : '0')
+    pmset '-a', 'womp', (enabled === :true ? '1' : '0')
   end
   
+  # Power button causes sleep instead of shut down
   def power_button_sleeps
-    info("powerbutton: " + self.class.pm_profiles[:current_profile]["powerbutton"])
-    return self.class.pm_profiles[:current_profile]["powerbutton"] === '1'
+    if self.class.pm_profiles[:current_profile]["powerbutton"] === '1'
+      :true
+    else
+      :false
+    end
   end
   
   def power_button_sleeps=(enabled)
-    pmset '-a', 'powerbutton', (enabled ? '1' : '0')
+    pmset '-a', 'powerbutton', (enabled === :true ? '1' : '0')
   end
   
+  # Restart on power failure
   def autorestart
-    return self.class.pm_profiles[:current_profile]["autorestart"] === '1'
+    if self.class.pm_profiles[:current_profile]["autorestart"] === '1'
+      :true
+    else
+      :false
+    end
   end
   
   def autorestart=(enabled)
-    pmset '-a', 'autorestart', (enabled ? '1' : '0')
+    pmset '-a', 'autorestart', (enabled === :true ? '1' : '0')
   end
 
   # pmset -g doesnt display current halfdim setting

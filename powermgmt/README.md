@@ -13,7 +13,7 @@ Example
 ```ruby
 
 powermgmt { "never sleep":
-	sleep => 0, # System sleep time (in minutes)
+	sleep => 0, # System sleep time (in minutes) zero means never sleep
 	disk_sleep => 0, # Disk spin down time (in minutes)
 	display_sleep => 0, # Display sleep time (in minutes)
 	wake_on_lan => true, # Turn on wake on lan
