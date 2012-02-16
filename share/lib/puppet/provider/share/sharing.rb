@@ -2,7 +2,7 @@ Puppet::Type.type(:share).provide :sharing, :parent => Puppet::Provider do
   
   desc "Create, Remove and Modify shares on Mac OS X"
   
-  commands :sharing => "/usr/sbin/sharing"
+  commands :sharing => "/usr/sbin/sharing" # Usually installed by Server Admin tools or ServerEssentials.pkg ?
   confine :operatingsystem => :darwin
   defaultfor :operatingsystem => :darwin
   
