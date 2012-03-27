@@ -1,6 +1,8 @@
 puppet-osx modules and providers
 --------------------------------
 
+*These providers are being moved to their own projects, this repository will be removed!*
+
 This repository will contain most of my custom modules and providers
 for managing mac os x clients and servers using puppet.
 
